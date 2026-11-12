@@ -231,7 +231,10 @@
   padding-top: 12px;
 }
 .recruiting-margin h2 {
-  font-size: 28px;
+  overflow-wrap: normal;
+  hyphens: manual;
+  /* Keep whole words such as "Podsumowanie" inside the narrow desktop margin. */
+  font-size: clamp(24px, 2.4vw, 28px);
   line-height: 1.15;
   letter-spacing: -0.6px;
   margin-bottom: 26px;

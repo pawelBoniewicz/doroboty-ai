@@ -49,7 +49,9 @@ const entries = [
   "docs/design-system",
   "docs/PARTICIPANT_GUIDE.md",
   "docs/SECURITY.md",
+  "docs/RELEASE.md",
   "docs/case",
+  ".github",
 ];
 fs.mkdirSync(target, { recursive: true });
 for (const entry of entries) {

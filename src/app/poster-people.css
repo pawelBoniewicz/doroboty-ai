@@ -310,3 +310,28 @@ footer {
     display: none;
   }
 }
+/* Persistent teaching-prototype notice on public screens (host extension of the notice recipe). */
+.prototype-banner {
+  background: #ffe0f7;
+  border-bottom: 1px solid var(--foreground);
+  color: var(--foreground);
+}
+.prototype-banner p {
+  max-width: 1360px;
+  margin-inline: auto;
+  padding: 8px 20px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.prototype-banner a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prototype-banner a:hover {
+  color: var(--gui-link);
+}
+@media (min-width: 1024px) {
+  .prototype-banner p {
+    padding-inline: 32px;
+  }
+}

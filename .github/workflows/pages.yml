@@ -1,0 +1,47 @@
+name: Publish prototype to GitHub Pages
+# Publishes only the verified static build (dist/) of the default branch.
+# Runs only where the repository variable PUBLISH_PAGES is "true" (the public publishing
+# repository); forks and the instructor repository skip it.
+# Repository Settings → Pages → Build and deployment → Source must be "GitHub Actions".
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  build:
+    name: Verify and build
+    if: vars.PUBLISH_PAGES == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - run: npm exec playwright install --with-deps chromium
+      - run: ./scripts/verify
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+  deploy:
+    name: Deploy
+    if: vars.PUBLISH_PAGES == 'true'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

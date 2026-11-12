@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/confirm-dialog";
 import { usePrototype } from "./store";
 import { serializeState, MAX_IMPORT_BYTES } from "./storage";
+import { Link } from "react-router";
 import { PageTitle } from "./shell";
 
 export function downloadText(name: string, text: string, type = "application/json") {
@@ -112,6 +113,36 @@ export function SettingsPage() {
         onConfirm={confirm}
       />
     </>
+  );
+}
+export function HelpPage() {
+  return (
+    <section className="prototype-section max-w-4xl">
+      <h1>Zgłoś problem</h1>
+      <div className="mt-6 space-y-5">
+        <p>
+          Prototyp nie wysyła informacji o błędach — dowiemy się o nich tylko od Ciebie. Jeśli coś
+          nie działa, napisz do osoby prowadzącej kurs AIPH3 kanałem, którego używacie na zajęciach.
+        </p>
+        <h2 className="text-xl font-semibold">Co warto podać</h2>
+        <ol className="list-decimal space-y-2 pl-6">
+          <li>Co chcesz zrobić i co się stało zamiast tego.</li>
+          <li>Adres strony z paska przeglądarki oraz nazwę przeglądarki i urządzenia.</li>
+          <li>Zrzut ekranu, jeśli to możliwe.</li>
+          <li>
+            Opcjonalnie plik eksportu scenariusza z{" "}
+            <Link className="underline" to="/app/settings">
+              ustawień
+            </Link>
+            . Zawiera tylko dane z tego prototypu — nie wpisuj do niego prawdziwych danych.
+          </li>
+        </ol>
+        <p>
+          Twoje zmiany zostają w tej przeglądarce. Zanim spróbujesz naprawić problem resetem,
+          pobierz eksport, aby nie stracić pracy.
+        </p>
+      </div>
+    </section>
   );
 }
 export function PrivacyPage() {
