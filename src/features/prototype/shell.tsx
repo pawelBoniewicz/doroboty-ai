@@ -32,6 +32,16 @@ export function Notice({ children }: { children: ReactNode }) {
     </div>
   );
 }
+export function PrototypeBanner() {
+  return (
+    <aside className="prototype-banner" aria-label="Informacja o prototypie">
+      <p>
+        <strong>Prototyp do ćwiczeń.</strong> Oferty, firmy i osoby są fikcyjne — nie wpisuj
+        prawdziwych danych osobowych. <Link to="/polityka-prywatnosci">Jak przechowujemy dane</Link>
+      </p>
+    </aside>
+  );
+}
 export function PageTitle({ children, action }: { children: ReactNode; action?: ReactNode }) {
   return (
     <div className="page-heading">
@@ -67,7 +77,7 @@ const employerNav = [
   ["/app/organizacja", "Organizacja", Building2],
 ] as const;
 export function Shell() {
-  const { state, issue, error, clearError } = usePrototype();
+  const { state, issue, error, clearError, externalChange, adoptExternalState } = usePrototype();
   const person = currentPerson(state);
   const { pathname } = useLocation();
   const workspace = pathname.startsWith("/app") && person;
@@ -91,6 +101,15 @@ export function Shell() {
   const content = (
     <>
       <>
+        {externalChange && (
+          <Notice>
+            Dane scenariusza zmieniono w innej karcie. Zmiany w tej karcie nie są zapisywane, aby
+            nie nadpisać tamtych.{" "}
+            <Button size="sm" variant="outline" onClick={adoptExternalState}>
+              Wczytaj aktualne dane
+            </Button>
+          </Notice>
+        )}
         {issue && (
           <Notice>
             {issue}{" "}
@@ -184,6 +203,9 @@ export function Shell() {
               <Link className="nav-link" to="/auth/sign-in">
                 Zmień osobę
               </Link>
+              <Link className="nav-link" to="/pomoc">
+                Zgłoś problem
+              </Link>
             </nav>
           </aside>
           <div className="workspace">
@@ -204,6 +226,7 @@ export function Shell() {
         </div>
       ) : (
         <>
+          <PrototypeBanner />
           <header className="bg-background/95 shadow-[var(--gui-divider-bottom-shadow)] backdrop-blur supports-[backdrop-filter]:bg-background/80">
             <div className="mx-auto flex h-16 max-w-[1360px] items-center justify-between gap-4 px-5 lg:px-8">
               <Link
@@ -298,6 +321,7 @@ export function Shell() {
                 <Link to="/oferty">Oferty</Link>
                 <Link to="/metodologia">Metodologia</Link>
                 <Link to="/polityka-prywatnosci">Prywatność</Link>
+                <Link to="/pomoc">Zgłoś problem</Link>
                 <Link className="inline-flex items-center gap-1" to="/auth/sign-in">
                   Strefa case <ArrowUpRight className="size-4" />
                 </Link>

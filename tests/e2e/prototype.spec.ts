@@ -995,3 +995,66 @@ test("candidate snapshot supports custom CV and long content at desktop and mobi
     record.answer,
   );
 });
+
+test("public screens and the application form label the teaching prototype at 320px and desktop", async ({
+  page,
+}) => {
+  for (const width of [1280, 320]) {
+    await page.setViewportSize({ width, height: 800 });
+    for (const path of ["/", "/#/oferty", "/#/oferty/ai-product-manager"]) {
+      await page.goto(path);
+      const banner = page.getByRole("complementary", { name: "Informacja o prototypie" });
+      await expect(banner).toContainText("Prototyp do ćwiczeń");
+      await expect(banner).toContainText("nie wpisuj prawdziwych danych");
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+        true,
+      );
+    }
+  }
+  await choose(page, "Anna Kowalska");
+  await page.goto("/#/aplikuj/ai-product-manager");
+  await expect(page.getByRole("complementary", { name: "Informacja o prototypie" })).toBeVisible();
+  await page.getByRole("link", { name: "Jak przechowujemy dane" }).click();
+  await expect(page.getByRole("heading", { name: "Prywatność prototypu" })).toBeVisible();
+});
+
+test("help page explains how to report a problem from footer and workspace", async ({ page }) => {
+  await page.goto("/");
+  await page
+    .getByRole("navigation", { name: "Stopka" })
+    .getByRole("link", { name: "Zgłoś problem" })
+    .click();
+  await expect(page).toHaveURL(/#\/pomoc$/);
+  await expect(page.getByRole("heading", { name: "Zgłoś problem", level: 1 })).toBeVisible();
+  await expect(page.getByText("osoby prowadzącej kurs AIPH3")).toBeVisible();
+  await choose(page, "Karolina Wiśniewska");
+  await page
+    .getByRole("navigation", { name: "Panel użytkownika" })
+    .getByRole("link", { name: "Zgłoś problem" })
+    .click();
+  await expect(page.getByRole("heading", { name: "Zgłoś problem", level: 1 })).toBeVisible();
+});
+
+test("a change from another tab stops this tab from overwriting it until reloaded", async ({
+  context,
+}) => {
+  const first = await context.newPage();
+  const second = await context.newPage();
+  await choose(first, "Anna Kowalska");
+  await second.goto("/#/app");
+  await first.goto("/#/app/profil");
+  const name = first.getByLabel("Imię i nazwisko");
+  await name.fill("Anna Kowalska-Testowa");
+  await first.getByRole("button", { name: "Zapisz profil" }).click();
+  const notice = second.getByRole("status").filter({ hasText: "zmieniono w innej karcie" });
+  await expect(notice).toBeVisible();
+  // Saving in the stale tab must not overwrite the newer data from the first tab.
+  await second.goto("/#/oferty/ai-product-manager");
+  await second.getByRole("button", { name: "Zapisz ofertę" }).click();
+  const saved = await first.evaluate((key) => localStorage.getItem(key), STORAGE_KEY);
+  expect(saved).toContain("Anna Kowalska-Testowa");
+  await second.getByRole("button", { name: "Wczytaj aktualne dane" }).click();
+  await expect(notice).toHaveCount(0);
+  await second.goto("/#/app/profil");
+  await expect(second.getByLabel("Imię i nazwisko")).toHaveValue("Anna Kowalska-Testowa");
+});

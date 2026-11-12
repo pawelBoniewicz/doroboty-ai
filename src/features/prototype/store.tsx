@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { initialState, transition, type Action, type State } from "./model";
-import { parseState, readState, saveState, type StoragePort } from "./storage";
+import { parseState, readState, saveState, STORAGE_KEY, type StoragePort } from "./storage";
 function browserStorage(): StoragePort | null {
   try {
     return window.localStorage;
@@ -14,16 +14,29 @@ function useStore() {
   const [issue, setIssue] = useState(loaded.issue);
   const [error, setError] = useState("");
   const [blocked, setBlocked] = useState(loaded.blocked);
+  const [externalChange, setExternalChange] = useState(false);
   const latest = useRef(state);
+  useEffect(() => {
+    function onStorage(event: StorageEvent) {
+      if (event.key !== null && event.key !== STORAGE_KEY) return;
+      setExternalChange(true);
+    }
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
   function commit(next: State, replace = false) {
     latest.current = next;
     setState(next);
     setError("");
+    if (externalChange && !replace) return;
     if (blocked && !replace) return;
     try {
       saveState(browserStorage(), next);
       setIssue("");
-      if (replace) setBlocked(false);
+      if (replace) {
+        setBlocked(false);
+        setExternalChange(false);
+      }
     } catch (e) {
       setIssue((e as Error).message);
     }
@@ -51,6 +64,18 @@ function useStore() {
       return false;
     }
   }
+  function adoptExternalState() {
+    const current = readState(browserStorage());
+    if (current.blocked) {
+      setIssue(current.issue);
+      return;
+    }
+    latest.current = current.state;
+    setState(current.state);
+    setIssue(current.issue);
+    setError("");
+    setExternalChange(false);
+  }
   useEffect(() => {
     document.documentElement.classList.remove("dark");
   }, []);
@@ -59,6 +84,8 @@ function useStore() {
     issue,
     error,
     blocked,
+    externalChange,
+    adoptExternalState,
     original: loaded.original,
     run,
     importState,
