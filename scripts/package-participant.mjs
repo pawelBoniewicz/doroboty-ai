@@ -52,6 +52,7 @@ const entries = [
   "docs/RELEASE.md",
   "docs/case",
   ".github",
+  "netlify.toml",
 ];
 fs.mkdirSync(target, { recursive: true });
 for (const entry of entries) {

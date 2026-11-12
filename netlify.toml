@@ -1,0 +1,17 @@
+# Netlify hosting for the static AIPH3 prototype. See docs/RELEASE.md.
+# Node.js comes from .nvmrc. Tests run in GitHub CI on pull requests, not in the Netlify build.
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# The app makes no external requests (checked by the browser tests), so everything is same-origin.
+# frame-ancestors/X-Frame-Options allow 'self' because the CV preview embeds a local PDF.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; frame-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"
+    X-Robots-Tag = "noindex, nofollow"
