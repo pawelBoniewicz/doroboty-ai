@@ -1058,3 +1058,40 @@ test("a change from another tab stops this tab from overwriting it until reloade
   await second.goto("/#/app/profil");
   await expect(second.getByLabel("Imię i nazwisko")).toHaveValue("Anna Kowalska-Testowa");
 });
+
+test("app runs under the production Content-Security-Policy without violations", async ({
+  page,
+}) => {
+  const toml = await readFile("netlify.toml", "utf8");
+  const policy = toml.match(/Content-Security-Policy\s*=\s*"([^"]+)"/)?.[1];
+  expect(policy).toContain("script-src 'self'");
+  await page.route("**/*", async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({
+      response,
+      headers: { ...response.headers(), "content-security-policy": policy! },
+    });
+  });
+  await page.addInitScript(() => {
+    const store: string[] = [];
+    (window as unknown as { __csp: string[] }).__csp = store;
+    document.addEventListener("securitypolicyviolation", (e) =>
+      store.push(`${e.violatedDirective} ${e.blockedURI}`),
+    );
+  });
+  const violations = () => page.evaluate(() => (window as unknown as { __csp: string[] }).__csp);
+  await application(page);
+  await expect(page).toHaveURL(/#\/app\/aplikacje/);
+  for (const path of ["/", "/#/oferty", "/#/oferty?view=map", "/#/pomoc"]) {
+    await page.goto(path);
+    await expect(
+      page.getByRole("complementary", { name: "Informacja o prototypie" }),
+    ).toBeVisible();
+    expect(await violations()).toEqual([]);
+  }
+  await choose(page, "Karolina Wiśniewska");
+  await page.goto("/#/app/kandydaci/application-example");
+  await page.getByRole("tab", { name: "CV" }).click();
+  await expect(page.locator("iframe.cv-preview")).toBeVisible();
+  expect(await violations()).toEqual([]);
+});
