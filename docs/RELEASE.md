@@ -36,7 +36,7 @@ Run these against the exact production URL, in a private window:
 3. The home page shows the "Prototyp do ćwiczeń" notice; the offers list and an offer detail open.
 4. A hash deep link (for example `/#/oferty/ai-product-manager`) opens directly after a refresh.
 5. Choose Anna Kowalska, submit an application, switch to Karolina Wiśniewska, move it to "W przeglądzie", refresh: the history keeps both stages. The CV preview shows the PDF.
-6. Developer tools → Console: no Content-Security-Policy errors. Network: no requests to other hosts.
+6. Developer tools → Console: no Content-Security-Policy errors from the app (Netlify's injected `/.netlify/scripts/hud` may report blocked inline scripts in an `about:` frame; that is Netlify's panel, not the app). Network: no requests to other hosts.
 7. Footer links "Prywatność" and "Zgłoś problem" open.
 
 Record the URL, deploy ID, commit, date and result in the readiness report.
