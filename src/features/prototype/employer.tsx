@@ -16,6 +16,7 @@ import { currentPerson, jobSchema } from "./model";
 import { usePrototype } from "./store";
 import { Field } from "./workspace";
 import { Empty, NotFound, PageTitle } from "./shell";
+import posthog from "posthog-js";
 
 export function EmployerJobs() {
   const { state } = usePrototype();
@@ -133,7 +134,20 @@ export function EmployerJobEditor() {
       );
       return;
     }
-    if (run({ type: "publish", job: parsed.data })) navigate("/app/oferty");
+    if (run({ type: "publish", job: parsed.data })) {
+      if (posthog.__loaded) {
+        try {
+          posthog.capture("job_published", {
+            job_id: parsed.data.id,
+            job_category: parsed.data.category,
+            is_new: !existing,
+          });
+        } catch {
+          // Analytics must not interrupt the prototype workflow.
+        }
+      }
+      navigate("/app/oferty");
+    }
   }
   return (
     <>
@@ -171,6 +185,13 @@ export function EmployerJobEditor() {
                 `${title}\n\nO roli\n${source.trim().slice(0, 10000)}\n\nJak pracujemy\nŁączymy potrzeby użytkowników, odpowiedzialne wykorzystanie AI i mierzalne efekty.\n\nProces rekrutacji\nPrześlij aplikację i opowiedz o projekcie, w którym Twoje decyzje wpłynęły na wynik.`,
               );
               setApproved(false);
+              if (posthog.__loaded) {
+                try {
+                  posthog.capture("job_description_generated");
+                } catch {
+                  // Analytics must not interrupt the prototype workflow.
+                }
+              }
             }}
           >
             Przygotuj opis z AI
@@ -188,6 +209,13 @@ export function EmployerJobEditor() {
                 setDescription(generated);
                 if (!summary) setSummary(source.slice(0, 180));
                 setApproved(false);
+                if (posthog.__loaded) {
+                  try {
+                    posthog.capture("job_description_proposal_used");
+                  } catch {
+                    // Analytics must not interrupt the prototype workflow.
+                  }
+                }
               }}
             >
               Użyj propozycji
@@ -286,8 +314,16 @@ export function CompanyEditor() {
         name: String(data.get("name")),
         description: String(data.get("description")),
       })
-    )
+    ) {
+      if (posthog.__loaded) {
+        try {
+          posthog.capture("company_profile_saved");
+        } catch {
+          // Analytics must not interrupt the prototype workflow.
+        }
+      }
       setMessage("Dane firmy zostały zapisane.");
+    }
   }
   return (
     <>

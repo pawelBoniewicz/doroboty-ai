@@ -1,7 +1,9 @@
 import { Component, type ReactNode } from "react";
+import posthog from "posthog-js";
 import { Button } from "@/components/ui/button";
 import { downloadText } from "./settings";
 import { STORAGE_KEY } from "./storage";
+import { posthogAppLogger } from "@/lib/posthog-logs";
 
 function readRawSave() {
   try {
@@ -11,11 +13,21 @@ function readRawSave() {
   }
 }
 
-/** Replaces a blank page after a render error with local recovery steps. Sends nothing anywhere. */
+/** Replaces a blank page after a render error with local recovery steps. */
 export class AppErrorBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() {
     return { failed: true };
+  }
+  componentDidCatch(error: Error) {
+    if (posthog.__loaded) {
+      try {
+        posthog.captureException(error);
+      } catch {
+        // Error reporting must not prevent the local recovery UI.
+      }
+    }
+    posthogAppLogger.renderRecoveryShown();
   }
   render() {
     if (!this.state.failed) return this.props.children;
