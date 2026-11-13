@@ -26,6 +26,7 @@ import { usePrototype } from "./store";
 import { currentPerson, publishedJobs } from "./model";
 import { NotFound } from "./shell";
 import { cn } from "@/lib/utils";
+import posthog from "posthog-js";
 
 function LocalMap({ jobs }: { jobs: JobWithCompany[] }) {
   const [selected, setSelected] = useState<string | null>(null);
@@ -146,7 +147,19 @@ export function JobsPage() {
       if (value) next.set(key, value);
       else next.delete(key);
     }
+    const submittedFilters = parseJobFilters(Object.fromEntries(next));
     setParams(next);
+    if (posthog.__loaded) {
+      try {
+        posthog.capture("job_search_submitted", {
+          has_query: Boolean(submittedFilters.query),
+          has_location: Boolean(submittedFilters.location),
+          result_count: filterJobs(all, submittedFilters).length,
+        });
+      } catch {
+        // Analytics must not interrupt the prototype workflow.
+      }
+    }
   }
   const locations = [...new Set(all.flatMap((x) => x.locations))];
   return (
@@ -430,7 +443,19 @@ export function JobPage() {
                     variant="outline"
                     aria-label="Zapisz ofertę"
                     aria-pressed={saved}
-                    onClick={() => run({ type: "toggle_saved", jobId: job.id })}
+                    onClick={() => {
+                      if (run({ type: "toggle_saved", jobId: job.id }) && posthog.__loaded) {
+                        try {
+                          posthog.capture("job_save_toggled", {
+                            job_id: job.id,
+                            job_category: job.category,
+                            saved: !saved,
+                          });
+                        } catch {
+                          // Analytics must not interrupt the prototype workflow.
+                        }
+                      }
+                    }}
                   >
                     <Bookmark className={cn(saved && "fill-current")} />
                     Zapisz ofertę

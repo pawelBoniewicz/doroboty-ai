@@ -16,6 +16,7 @@ import { CvAttachment } from "./cv-attachment";
 import { MatchScore } from "./match-score";
 import { RecruitingApplication } from "./recruiting-application";
 import { CandidateApplication } from "./candidate-application";
+import posthog from "posthog-js";
 
 export function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -156,8 +157,16 @@ export function ProfilePage({ preview = false }: { preview?: boolean }) {
           location: String(data.get("location")),
         },
       })
-    )
+    ) {
+      if (posthog.__loaded) {
+        try {
+          posthog.capture("profile_saved");
+        } catch {
+          // Analytics must not interrupt the prototype workflow.
+        }
+      }
       setMessage("Profil został zapisany.");
+    }
   }
   return (
     <>
@@ -282,6 +291,17 @@ export function ApplyPage() {
       return;
     }
     if (run({ type: "submit", jobId: job!.id, notes, generated, answer, consent })) {
+      if (posthog.__loaded) {
+        try {
+          posthog.capture("application_submitted", {
+            job_id: job!.id,
+            job_category: job!.category,
+            answer_length: answerLength,
+          });
+        } catch {
+          // Analytics must not interrupt the prototype workflow.
+        }
+      }
       submittedOnce.current = true;
       setSubmitted(true);
       if (!window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -387,8 +407,19 @@ export function ApplyPage() {
                 disabled={submitted}
                 variant="outline"
                 onClick={() => {
-                  if (run({ type: "draft", jobId: job.id, notes, generated, answer }))
+                  if (run({ type: "draft", jobId: job.id, notes, generated, answer })) {
+                    if (posthog.__loaded) {
+                      try {
+                        posthog.capture("application_draft_saved", {
+                          job_id: job.id,
+                          answer_length: answerLength,
+                        });
+                      } catch {
+                        // Analytics must not interrupt the prototype workflow.
+                      }
+                    }
                     setMessage("Szkic został zapisany.");
+                  }
                 }}
               >
                 Zapisz szkic
