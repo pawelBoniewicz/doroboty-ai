@@ -1,4 +1,6 @@
-import { HashRouter, Routes, Route, Navigate } from "react-router";
+import { useEffect } from "react";
+import { HashRouter, Routes, Route, Navigate, useLocation } from "react-router";
+import { analyticsEnabled, trackPageview } from "@/lib/analytics";
 import { PrototypeProvider } from "./store";
 import { Shell, NotFound } from "./shell";
 import HomePage from "./home";
@@ -18,6 +20,15 @@ import { EmployerJobs, EmployerJobEditor, CompanyEditor } from "./employer";
 import { SettingsPage, PrivacyPage, HelpPage } from "./settings";
 import { CasePage } from "./case";
 import { AppErrorBoundary } from "./error-boundary";
+function PageviewTracker() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    if (!analyticsEnabled) return;
+    const { origin, pathname: base } = window.location;
+    trackPageview(`${origin}${base}#${pathname}`);
+  }, [pathname]);
+  return null;
+}
 function AppRoutes() {
   return (
     <Routes>
@@ -154,6 +165,7 @@ export function App() {
     <AppErrorBoundary>
       <PrototypeProvider>
         <HashRouter>
+          <PageviewTracker />
           <AppRoutes />
         </HashRouter>
       </PrototypeProvider>
