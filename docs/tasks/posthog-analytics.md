@@ -11,7 +11,10 @@ the earlier SYS-03 removal in an opt-in way.
 - `posthog-js` is bundled (no remote script); it is loaded only when `VITE_POSTHOG_KEY` is set at
   build time. Without the key the app makes no external requests (existing browser tests stay
   green).
-- Optional `VITE_POSTHOG_HOST` overrides the default `https://eu.i.posthog.com`.
+- Optional `VITE_POSTHOG_HOST` overrides the default same-origin `/ingest`.
+- `/ingest/*` is proxied to `https://eu.i.posthog.com` by a Netlify rewrite (status 200) and the
+  Vite dev server proxy, because ad blockers and corporate filters drop direct requests to
+  posthog.com (2026-11-13: a curl event arrived while browser events did not).
 - No cookies or localStorage: `persistence: "memory"`, `person_profiles: "never"`, no `identify`.
 - Autocapture (enabled 2026-11-13 on request) records only `click` and `submit` with
   `mask_all_text` and `mask_all_element_attributes`, so `$elements_chain` holds tag/position
@@ -25,7 +28,8 @@ the earlier SYS-03 removal in an opt-in way.
 - Domain events come from an explicit allowlist mapped from store actions; only synthetic IDs,
   enums and booleans are sent — never notes, answers, generated text, profile or company fields.
 - Unit tests prove free-text action fields never appear in event payloads.
-- CSP `connect-src` allows the EU ingestion host.
+- CSP `connect-src` stays `'self'`.
+- The privacy page discloses PostHog statistics when the key is built in.
 - FEATURES.md SYS-03 describes the actual behavior.
 
 ## Event contract

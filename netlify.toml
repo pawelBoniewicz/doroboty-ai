@@ -4,13 +4,21 @@
   command = "npm run build"
   publish = "dist"
 
-# The app makes no external requests (checked by the browser tests) unless VITE_POSTHOG_KEY is set
-# at build time; then the bundled posthog-js posts anonymous events to PostHog Cloud EU only.
+# PostHog reverse proxy: status 200 rewrites server-side instead of redirecting the browser.
+[[redirects]]
+  from = "/ingest/*"
+  to = "https://eu.i.posthog.com/:splat"
+  status = 200
+  force = true
+
+# The app makes no external requests (checked by the browser tests). When VITE_POSTHOG_KEY is set at
+# build time, posthog-js posts anonymous events to same-origin /ingest, which Netlify proxies to
+# PostHog Cloud EU, so ad blockers and network filters on posthog.com do not drop them.
 # frame-ancestors/X-Frame-Options allow 'self' because the CV preview embeds a local PDF.
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; frame-src 'self'; connect-src 'self' https://eu.i.posthog.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; frame-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
     X-Frame-Options = "SAMEORIGIN"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
