@@ -4,12 +4,13 @@
   command = "npm run build"
   publish = "dist"
 
-# The app makes no external requests (checked by the browser tests), so everything is same-origin.
+# The app makes no external requests (checked by the browser tests) unless VITE_POSTHOG_KEY is set
+# at build time; then the bundled posthog-js posts anonymous events to PostHog Cloud EU only.
 # frame-ancestors/X-Frame-Options allow 'self' because the CV preview embeds a local PDF.
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; frame-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; frame-src 'self'; connect-src 'self' https://eu.i.posthog.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'"
     X-Frame-Options = "SAMEORIGIN"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"

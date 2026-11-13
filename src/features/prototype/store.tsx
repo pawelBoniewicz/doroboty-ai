@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { initialState, transition, type Action, type State } from "./model";
 import { parseState, readState, saveState, STORAGE_KEY, type StoragePort } from "./storage";
+import { toAnalyticsEvent, track } from "@/lib/analytics";
 function browserStorage(): StoragePort | null {
   try {
     return window.localStorage;
@@ -43,7 +44,9 @@ function useStore() {
   }
   function run(action: Action) {
     try {
-      commit(transition(latest.current, action));
+      const next = transition(latest.current, action);
+      commit(next);
+      track(toAnalyticsEvent(action, next));
       return true;
     } catch (e) {
       setError(
