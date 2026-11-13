@@ -17,7 +17,7 @@ Navigation from Netlify documentation read on 2026-11-12:
 1. Netlify team dashboard → **Add new project** → **Import an existing project** → GitHub; authorize the Netlify GitHub App for `pawelBoniewicz/doroboty-ai` only.
 2. Select the repository. Leave build settings as detected from `netlify.toml` (command `npm run build`, publish directory `dist`) and confirm with **Publish**.
 3. Project configuration → Developer settings → Continuous deployment → Branches and deploy contexts: production branch `main`; keep deploy previews for pull requests.
-4. Optional analytics: Project configuration → Environment variables → add `VITE_POSTHOG_KEY` with the PostHog Cloud EU project API key (public `phc_` key, not a personal API key) and redeploy. Only the EU host is allowed by the CSP.
+4. Optional analytics: Project configuration → Environment variables → add `VITE_POSTHOG_KEY` with the PostHog Cloud EU project API key (public `phc_` key, not a personal API key) and redeploy. The app sends events to same-origin `/ingest`, which the `netlify.toml` rewrite proxies to PostHog Cloud EU; the CSP stays same-origin.
 5. Note the site address (`https://<name>.netlify.app`) and run the five-minute check below.
 
 Plan notes (Netlify pricing page, 2026-11-12): Free has 300 credits per month; a production deploy costs 15 credits and bandwidth 20 credits per GB. The site is about 2.3 MB, so a course group fits easily, but roughly 20 production deploys per month would use the whole Free allowance. Linking a **private** GitHub repository on Free is not confirmed by the pricing page; check it in the Netlify UI. Repository visibility does not change what is published: only `dist/` is deployed, never `docs/source`.
@@ -37,7 +37,7 @@ Run these against the exact production URL, in a private window:
 3. The home page shows the "Prototyp do ćwiczeń" notice; the offers list and an offer detail open.
 4. A hash deep link (for example `/#/oferty/ai-product-manager`) opens directly after a refresh.
 5. Choose Anna Kowalska, submit an application, switch to Karolina Wiśniewska, move it to "W przeglądzie", refresh: the history keeps both stages. The CV preview shows the PDF.
-6. Developer tools → Console: no Content-Security-Policy errors. Network: no requests to other hosts.
+6. Developer tools → Console: no Content-Security-Policy errors. Network: no requests to other hosts (with analytics on, events go to `/ingest/…` on the same host).
 7. Footer links "Prywatność" and "Zgłoś problem" open.
 
 Record the URL, deploy ID, commit, date and result in the readiness report.

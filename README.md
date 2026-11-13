@@ -24,7 +24,7 @@ npm ci
 npm run dev
 ```
 
-Open http://127.0.0.1:3001. No environment file, account, database or additional service is required. Optional analytics: set `VITE_POSTHOG_KEY` (PostHog project API key, `phc_…`) and optionally `VITE_POSTHOG_HOST` (default `https://eu.i.posthog.com`) in the environment before `npm run dev`/`npm run build`; without it nothing is sent. Package installation requires access to the npm registry.
+Open http://127.0.0.1:3001. No environment file, account, database or additional service is required. Optional analytics: set `VITE_POSTHOG_KEY` (PostHog project API key, `phc_…`) and optionally `VITE_POSTHOG_HOST` (default same-origin `/ingest`, proxied to `https://eu.i.posthog.com` by `vite.config.ts` and `netlify.toml`) in the environment before `npm run dev`/`npm run build`; without it nothing is sent. Package installation requires access to the npm registry.
 
 Select Anna or Marek as a candidate, Karolina or Tomasz as an employer, or the instructor. Publish a job, apply, switch person and record the employer decision. Changes survive reload in this browser; settings provide export, import and reset. AI and scores simulate prepared scenarios. Use example CVs only.
 

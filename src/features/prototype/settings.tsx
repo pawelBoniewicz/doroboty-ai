@@ -5,6 +5,7 @@ import { usePrototype } from "./store";
 import { serializeState, MAX_IMPORT_BYTES } from "./storage";
 import { Link } from "react-router";
 import { PageTitle } from "./shell";
+import { analyticsEnabled } from "@/lib/analytics";
 
 export function downloadText(name: string, text: string, type = "application/json") {
   const url = URL.createObjectURL(new Blob([text], { type }));
@@ -156,9 +157,17 @@ export function PrivacyPage() {
         </p>
         <p>
           Profile, aplikacje i ustawienia pozostają w pamięci tej przeglądarki. Aplikacja nie wysyła
-          ich do bazy, dostawcy AI ani systemu analitycznego. Plik eksportu zawiera cały lokalny
-          scenariusz, w tym notatki.
+          ich treści do bazy, dostawcy AI ani systemu analitycznego. Plik eksportu zawiera cały
+          lokalny scenariusz, w tym notatki.
         </p>
+        {analyticsEnabled ? (
+          <p>
+            Ta wersja zbiera anonimowe statystyki użycia w PostHog (serwery w UE), przesyłane przez
+            adres tej witryny: odwiedzane ekrany, kliknięcia bez tekstu elementów oraz zdarzenia,
+            takie jak zapisanie oferty lub wysłanie aplikacji, z fikcyjnymi identyfikatorami. Nie
+            używamy plików cookie i nie przesyłamy wpisanych tekstów, imion ani notatek.
+          </p>
+        ) : null}
         <p>
           Możesz usunąć zmiany przyciskiem „Resetuj scenariusz” w ustawieniach lub wyczyścić dane
           witryny w przeglądarce. Hosting może prowadzić własne logi dostępu.

@@ -9,7 +9,8 @@ type Client = {
   capture: (event: string, properties?: Properties) => void;
 };
 
-const DEFAULT_HOST = "https://eu.i.posthog.com";
+// Same-origin path proxied to https://eu.i.posthog.com by Netlify and the Vite dev server.
+const DEFAULT_HOST = "/ingest";
 const key = import.meta.env.VITE_POSTHOG_KEY as string | undefined;
 const host = (import.meta.env.VITE_POSTHOG_HOST as string | undefined) || DEFAULT_HOST;
 
@@ -81,6 +82,7 @@ function load(): Promise<Client | null> {
     .then(({ default: posthog }) => {
       posthog.init(key, {
         api_host: host,
+        ui_host: "https://eu.posthog.com",
         defaults: "2026-08-30",
         persistence: "memory",
         person_profiles: "never",
